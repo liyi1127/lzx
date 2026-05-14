@@ -6,6 +6,11 @@
 npm start
 ```
 
+如果你在 Windows 上想双击直接打开，也可以使用：
+
+- `启动问卷.bat`
+- `打开后台.bat`
+
 启动后访问：
 
 - 问卷页：`http://localhost:3000/`
