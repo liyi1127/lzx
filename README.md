@@ -1,5 +1,7 @@
 # 教师满意度调查问卷
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/liyi1127/lzx/tree/master)
+
 ## 本地启动
 
 ```bash
