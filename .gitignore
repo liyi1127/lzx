@@ -4,3 +4,4 @@ exports/
 server.out.log
 server.err.log
 test-export.xlsx
+.ssh/
