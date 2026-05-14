@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师满意度调查后台</title>
+  <style>
+    :root {
+      --bg: #f3fbfb;
+      --panel: #ffffff;
+      --line: #d8ecec;
+      --text: #17353b;
+      --muted: #6a858d;
+      --primary: #1497a3;
+      --primary-dark: #0c7881;
+      --accent: #2dbeaf;
+      --shadow: 0 18px 44px rgba(20, 80, 88, 0.08);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(45, 190, 175, 0.14), transparent 24%),
+        linear-gradient(180deg, #fbffff 0%, var(--bg) 100%);
+    }
+
+    .page {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      padding: 28px 16px 40px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border-radius: var(--radius);
+      border: 1px solid rgba(20, 151, 163, 0.1);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 24px 22px;
+      margin-bottom: 18px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(20, 151, 163, 0.1);
+      color: var(--primary-dark);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(28px, 5vw, 40px);
+      line-height: 1.2;
+    }
+
+    .intro {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .hero-actions,
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn,
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 12px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(20, 151, 163, 0.16);
+      background: #ffffff;
+      color: var(--primary-dark);
+      text-decoration: none;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      color: #ffffff;
+      border: 0;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 14px 30px rgba(20, 151, 163, 0.22);
+    }
+
+    .summary-grid,
+    .charts-grid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .summary-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .charts-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .metric-card,
+    .chart-card,
+    .table-card {
+      padding: 20px;
+    }
+
+    .metric-label,
+    .section-title,
+    .chart-title {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .metric-value {
+      margin: 10px 0 0;
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .toolbar {
+      margin-bottom: 18px;
+    }
+
+    .status {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .chart-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .chart-row {
+      display: grid;
+      gap: 6px;
+    }
+
+    .chart-row-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .bar-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #e8f2f2;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .score-range {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #fbffff 0%, #f1fbfb 100%);
+      border: 1px solid var(--line);
+    }
+
+    .score-value {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      margin-top: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+      background: #ffffff;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f7fcfc;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    @media (min-width: 768px) {
+      .page {
+        padding: 36px 20px 56px;
+      }
+
+      .hero,
+      .panel {
+        padding-left: 28px;
+        padding-right: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="eyebrow">数据看板</div>
+          <h1>教师满意度调查后台</h1>
+          <p class="intro">这里可以查看提交总量、满意度分布、评分均值、使用频率、多选项偏好，以及全部原始记录。支持一键刷新与导出 Excel。</p>
+        </div>
+        <div class="hero-actions">
+          <a class="link-btn" href="/">返回问卷页</a>
+          <a class="btn primary" href="/api/export/excel">导出 Excel</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <button class="btn" id="refreshButton" type="button">刷新数据</button>
+      <span class="status" id="statusText">正在加载数据…</span>
+    </div>
+
+    <section class="summary-grid" id="summaryGrid">
+      <article class="panel metric-card">
+        <p class="metric-label">总提交数</p>
+        <p class="metric-value" id="totalCount">0</p>
+      </article>
+      <article class="panel metric-card">
+        <p class="metric-label">平均意愿评分</p>
+        <p class="metric-value" id="avgScore">0.0</p>
+      </article>
+      <article class="panel metric-card">
+        <p class="metric-label">最近一次提交</p>
+        <p class="metric-value" id="latestTime" style="font-size: 20px;">暂无</p>
+      </article>
+    </section>
+
+    <section class="charts-grid">
+      <article class="panel chart-card">
+        <p class="chart-title">整体满意度分布</p>
+        <div class="chart-list" id="satisfactionChart"></div>
+      </article>
+      <article class="panel chart-card">
+        <p class="chart-title">使用频率分布</p>
+        <div class="chart-list" id="frequencyChart"></div>
+      </article>
+      <article class="panel chart-card">
+        <p class="chart-title">教师职业优势偏好</p>
+        <div class="chart-list" id="advantagesChart"></div>
+      </article>
+      <article class="panel chart-card">
+        <p class="chart-title">做老师意愿评分</p>
+        <div class="score-range">
+          <p class="score-value" id="scoreAverageLarge">0.0 分</p>
+          <p class="muted" id="scoreMeta">暂无评分数据</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel table-card">
+      <p class="section-title">原始提交记录</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>提交时间</th>
+              <th>姓名</th>
+              <th>联系方式</th>
+              <th>整体满意度</th>
+              <th>做老师意愿评分</th>
+              <th>最看重优势</th>
+              <th>使用频率</th>
+              <th>建议或意见</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const statusText = document.getElementById("statusText");
+    const refreshButton = document.getElementById("refreshButton");
+    const totalCount = document.getElementById("totalCount");
+    const avgScore = document.getElementById("avgScore");
+    const latestTime = document.getElementById("latestTime");
+    const scoreAverageLarge = document.getElementById("scoreAverageLarge");
+    const scoreMeta = document.getElementById("scoreMeta");
+    const recordsBody = document.getElementById("recordsBody");
+
+    const satisfactionOrder = ["非常满意", "满意", "一般", "不满意", "非常不满意"];
+    const frequencyOrder = ["每天", "每周", "每月", "偶尔"];
+    const advantagesOrder = ["生活质量", "服务态度", "响应速度", "性价比", "晚年保障"];
+
+    function formatDateTime(value) {
+      if (!value) {
+        return "暂无";
+      }
+
+      return new Date(value).toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+
+    function renderBars(containerId, source, order) {
+      const container = document.getElementById(containerId);
+      const max = Math.max(1, ...order.map((key) => source[key] || 0));
+
+      container.innerHTML = order.map((label) => {
+        const count = source[label] || 0;
+        const width = (count / max) * 100;
+
+        return `
+          <div class="chart-row">
+            <div class="chart-row-top">
+              <span>${label}</span>
+              <span>${count}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width: ${width}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderRecords(records) {
+      if (!records.length) {
+        recordsBody.innerHTML = `
+          <tr>
+            <td colspan="8" class="muted">还没有任何提交记录。请先填写并提交一份问卷。</td>
+          </tr>
+        `;
+        return;
+      }
+
+      recordsBody.innerHTML = records.map((record) => `
+        <tr>
+          <td>${formatDateTime(record.submittedAt)}</td>
+          <td>${record.name || "-"}</td>
+          <td>${record.contact || "-"}</td>
+          <td>${record.satisfaction}</td>
+          <td>${record.teacherScore} 分</td>
+          <td>${record.advantages.length ? record.advantages.join("、") : "-"}</td>
+          <td>${record.frequency}</td>
+          <td>${record.suggestion || "-"}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadDashboard() {
+      statusText.textContent = "正在加载数据…";
+
+      try {
+        const response = await fetch("/api/dashboard");
+
+        if (!response.ok) {
+          throw new Error("加载失败");
+        }
+
+        const data = await response.json();
+        totalCount.textContent = String(data.totalCount);
+        avgScore.textContent = data.averageTeacherScore.toFixed(1);
+        latestTime.textContent = data.latestSubmission ? formatDateTime(data.latestSubmission) : "暂无";
+        scoreAverageLarge.textContent = data.averageTeacherScore.toFixed(1) + " 分";
+        scoreMeta.textContent = data.totalCount ? "共收到 " + data.totalCount + " 份有效问卷" : "暂无评分数据";
+
+        renderBars("satisfactionChart", data.satisfactionCounts, satisfactionOrder);
+        renderBars("frequencyChart", data.frequencyCounts, frequencyOrder);
+        renderBars("advantagesChart", data.advantagesCounts, advantagesOrder);
+        renderRecords(data.records);
+
+        statusText.textContent = "数据已更新，最后刷新时间：" + formatDateTime(new Date().toISOString());
+      } catch (error) {
+        statusText.textContent = "加载失败，请确认后台服务正在运行。";
+      }
+    }
+
+    refreshButton.addEventListener("click", loadDashboard);
+    loadDashboard();
+  </script>
+</body>
+</html>

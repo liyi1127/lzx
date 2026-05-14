@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>您的反馈对我们很重要</title>
+  <style>
+    :root {
+      --bg: #f4fbfb;
+      --panel: #ffffff;
+      --line: #d9ecec;
+      --text: #14323a;
+      --muted: #64818a;
+      --primary: #1497a3;
+      --primary-dark: #0c7881;
+      --primary-soft: #e5f7f7;
+      --accent: #2dbeaf;
+      --success: #0f9f73;
+      --danger: #c64b4b;
+      --shadow: 0 18px 44px rgba(20, 80, 88, 0.08);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(45, 190, 175, 0.14), transparent 26%),
+        linear-gradient(180deg, #fbffff 0%, var(--bg) 100%);
+    }
+
+    .page {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: 28px 16px 40px;
+    }
+
+    .hero {
+      padding: 24px 22px 18px;
+      margin-bottom: 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, #f8ffff 0%, #ecfbfb 100%);
+      border: 1px solid rgba(20, 151, 163, 0.1);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(20, 151, 163, 0.1);
+      color: var(--primary-dark);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .top-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: var(--primary-dark);
+      background: #ffffff;
+      border: 1px solid rgba(20, 151, 163, 0.18);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    h1 {
+      margin: 16px 0 8px;
+      font-size: clamp(28px, 6vw, 38px);
+      line-height: 1.2;
+      letter-spacing: 0.02em;
+    }
+
+    .intro {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .progress-card,
+    .form-card,
+    .thanks-card,
+    .share-card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      border: 1px solid rgba(20, 151, 163, 0.1);
+      box-shadow: var(--shadow);
+    }
+
+    .progress-card {
+      position: sticky;
+      top: 14px;
+      z-index: 10;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .progress-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .progress-track {
+      height: 10px;
+      background: #e9f3f3;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.25s ease;
+    }
+
+    .form-card,
+    .thanks-card,
+    .share-card {
+      padding: 22px 18px 26px;
+    }
+
+    .question {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .question:first-child {
+      padding-top: 8px;
+    }
+
+    .question:last-of-type {
+      border-bottom: 0;
+      padding-bottom: 6px;
+    }
+
+    .question-title {
+      margin: 0 0 14px;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .question-meta {
+      margin-left: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .text-input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font: inherit;
+      color: var(--text);
+      background: #ffffff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      appearance: none;
+    }
+
+    .text-input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(20, 151, 163, 0.12);
+    }
+
+    .choice-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice-item {
+      position: relative;
+    }
+
+    .choice-item input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 56px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #ffffff;
+      transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .choice-card::before {
+      content: "";
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      border-radius: 999px;
+      border: 2px solid #bfd9dc;
+      transition: all 0.18s ease;
+      background: #ffffff;
+    }
+
+    .choice-item.checkbox .choice-card::before {
+      border-radius: 7px;
+    }
+
+    .choice-item input:checked + .choice-card {
+      border-color: rgba(20, 151, 163, 0.44);
+      background: var(--primary-soft);
+      box-shadow: 0 8px 22px rgba(20, 151, 163, 0.1);
+    }
+
+    .choice-item input:checked + .choice-card::before {
+      border-color: var(--primary);
+      background:
+        radial-gradient(circle at center, #ffffff 0 32%, transparent 33%),
+        var(--primary);
+    }
+
+    .choice-item.checkbox input:checked + .choice-card::before {
+      background: var(--primary);
+      box-shadow: inset 0 0 0 3px #ffffff;
+    }
+
+    .choice-item input:focus-visible + .choice-card {
+      outline: 3px solid rgba(20, 151, 163, 0.18);
+      outline-offset: 2px;
+    }
+
+    .range-wrap {
+      padding: 14px 16px 18px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #fbffff 0%, #f1fafa 100%);
+      border: 1px solid var(--line);
+    }
+
+    .range-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+
+    .range-value {
+      min-width: 64px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--primary-dark);
+      background: rgba(20, 151, 163, 0.12);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary) 50%, #dceff0 50%);
+      outline: none;
+      appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 0;
+      background: #ffffff;
+      box-shadow: 0 6px 14px rgba(20, 121, 129, 0.22), inset 0 0 0 6px var(--primary);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 0;
+      background: #ffffff;
+      box-shadow: 0 6px 14px rgba(20, 121, 129, 0.22), inset 0 0 0 6px var(--primary);
+    }
+
+    .range-scale {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .submit-row {
+      padding-top: 24px;
+    }
+
+    .submit-btn,
+    .secondary-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 16px 22px;
+      font: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
+    .submit-btn {
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 14px 30px rgba(20, 151, 163, 0.22);
+    }
+
+    .secondary-btn {
+      color: var(--primary-dark);
+      background: #ffffff;
+      border: 1px solid rgba(20, 151, 163, 0.18);
+      margin-top: 12px;
+    }
+
+    .submit-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .hint,
+    .status-text,
+    .share-note {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .status-text {
+      min-height: 20px;
+      margin-bottom: 0;
+    }
+
+    .status-text.success {
+      color: var(--success);
+    }
+
+    .status-text.error {
+      color: var(--danger);
+    }
+
+    .thanks-card {
+      display: none;
+      text-align: center;
+      padding: 42px 22px;
+    }
+
+    .thanks-card.is-visible {
+      display: block;
+    }
+
+    .thanks-badge {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 18px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-size: 34px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 16px 36px rgba(20, 151, 163, 0.22);
+    }
+
+    .thanks-title {
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+
+    .thanks-text {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .share-card {
+      margin-top: 18px;
+    }
+
+    .share-title {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .share-text {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .share-box {
+      display: grid;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .qr-wrap {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #fbffff 0%, #f1fbfb 100%);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      padding: 16px;
+    }
+
+    .qr-wrap img {
+      width: min(100%, 220px);
+      height: auto;
+      display: block;
+    }
+
+    .link-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .share-link {
+      display: block;
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--text);
+      text-decoration: none;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (min-width: 640px) {
+      .page {
+        padding: 36px 20px 56px;
+      }
+
+      .hero,
+      .progress-card,
+      .form-card,
+      .thanks-card,
+      .share-card {
+        padding-left: 28px;
+        padding-right: 28px;
+      }
+
+      .field-grid,
+      .share-box {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="eyebrow">教师满意度调查</div>
+        <a class="top-link" href="/admin">查看后台数据看板</a>
+      </div>
+      <h1>您的反馈对我们很重要</h1>
+      <p class="intro">请花几分钟填写这份问卷，帮助我们更好地了解您对教师职业与服务体验的看法。问卷已针对手机端优化，填写会更加顺手。</p>
+    </section>
+
+    <section class="progress-card" aria-label="填写进度">
+      <div class="progress-top">
+        <span class="progress-label">当前填写进度</span>
+        <span class="progress-value" id="progressText">0%</span>
+      </div>
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </section>
+
+    <section class="form-card" id="formSection">
+      <form id="surveyForm">
+        <div class="question">
+          <h2 class="question-title">基本信息<span class="question-meta">选填</span></h2>
+          <div class="field-grid">
+            <div class="field">
+              <label for="name">姓名</label>
+              <input class="text-input" id="name" name="name" type="text" placeholder="请输入您的姓名">
+            </div>
+            <div class="field">
+              <label for="contact">联系方式</label>
+              <input class="text-input" id="contact" name="contact" type="text" placeholder="手机号或微信等">
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <h2 class="question-title">1. 整体满意度</h2>
+          <div class="choice-list">
+            <label class="choice-item">
+              <input type="radio" name="satisfaction" value="非常满意" required>
+              <span class="choice-card">非常满意</span>
+            </label>
+            <label class="choice-item">
+              <input type="radio" name="satisfaction" value="满意">
+              <span class="choice-card">满意</span>
+            </label>
+            <label class="choice-item">
+              <input type="radio" name="satisfaction" value="一般">
+              <span class="choice-card">一般</span>
+            </label>
+            <label class="choice-item">
+              <input type="radio" name="satisfaction" value="不满意">
+              <span class="choice-card">不满意</span>
+            </label>
+            <label class="choice-item">
+              <input type="radio" name="satisfaction" value="非常不满意">
+              <span class="choice-card">非常不满意</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="question">
+          <h2 class="question-title">2. 您是否愿意做老师</h2>
+          <div class="range-wrap">
+            <div class="range-top">
+              <span class="progress-label">请拖动滑块评分，1 分最低，10 分最高</span>
+              <span class="range-value" id="scoreValue">5 分</span>
+            </div>
+            <input id="teacherScore" name="teacherScore" type="range" min="1" max="10" value="5" aria-describedby="scoreHint">
+            <div class="range-scale" id="scoreHint">
+              <span>1 分</span>
+              <span>10 分</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <h2 class="question-title">3. 您最看重教师职业的哪方面优势</h2>
+          <div class="choice-list">
+            <label class="choice-item checkbox">
+              <input type="checkbox" name="advantages" value="生活质量">
+              <span class="choice-card">生活质量</span>
+            </label>
+            <label class="choice-item checkbox">
+              <input type="checkbox" name="advantages" value="服务态度">
+              <span class="choice-card">服务态度</span>
+            </label>
+            <label class="choice-item checkbox">
+              <input type="checkbox" name="advantages" value="响应速度">
+              <span class="choice-card">响应速度</span>
+            </label>
+            <label class="choice-item checkbox">
+              <input type="checkbox" name="advantages" value="性价比">
+              <span class="choice-card">性价比</span>
+            </label>
+            <label class="choice-item checkbox">
+              <input type="checkbox" name="advantages" value="晚年保障">
+              <span class="choice-card">晚年保障</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="question">
+          <h2 class="question-title">4. 使用频率</h2>
+          <div class="choice-list">
+            <label class="choice-item">
+              <input type="radio" name="frequency" value="每天" required>
+              <span class="choice-card">每天</span>
+            </label>
+            <label class="choice-item">
+              <input type="radio" name="frequency" value="每周">
+              <span class="choice-card">每周</span>
+            </label>
+            <label class="choice-item">
+              <input type="radio" name="frequency" value="每月">
+              <span class="choice-card">每月</span>
+            </label>
+            <label class="choice-item">
+              <input type="radio" name="frequency" value="偶尔">
+              <span class="choice-card">偶尔</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="question">
+          <h2 class="question-title">5. 您的建议或意见<span class="question-meta">选填</span></h2>
+          <textarea id="suggestion" name="suggestion" placeholder="欢迎写下您对教师职业、服务体验或改进方向的想法。"></textarea>
+        </div>
+
+        <div class="submit-row">
+          <button class="submit-btn" id="submitButton" type="submit">提交问卷</button>
+          <p class="status-text" id="statusText"></p>
+          <p class="hint">请先完成必答题，提交后数据会自动写入后台，可在管理看板导出 Excel。</p>
+        </div>
+      </form>
+    </section>
+
+    <section class="thanks-card" id="thanksSection" aria-live="polite">
+      <div class="thanks-badge">✓</div>
+      <h2 class="thanks-title">感谢您的反馈</h2>
+      <p class="thanks-text">我们已经收到您的问卷内容。您的每一条建议都会帮助我们更认真地优化体验与服务，再次感谢您的支持与参与。</p>
+      <button class="secondary-btn" id="restartButton" type="button">继续填写一份新问卷</button>
+    </section>
+
+    <section class="share-card">
+      <h2 class="share-title">扫码分享问卷</h2>
+      <p class="share-text">启动本地后台后，这里会自动显示可访问链接与二维码。用同一局域网下的手机扫码，就能直接打开问卷填写。</p>
+      <div class="share-box">
+        <div class="qr-wrap" id="qrWrap">等待后台生成二维码…</div>
+        <div class="link-box">
+          <a class="share-link" id="shareLink" href="#" target="_blank" rel="noreferrer">等待后台链接…</a>
+          <button class="secondary-btn" id="copyLinkButton" type="button">复制分享链接</button>
+          <p class="share-note" id="shareNote">如果当前是直接打开本地文件，请先运行后台服务，再通过 `http://本机IP:3000` 访问。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("surveyForm");
+    const formSection = document.getElementById("formSection");
+    const thanksSection = document.getElementById("thanksSection");
+    const progressText = document.getElementById("progressText");
+    const progressFill = document.getElementById("progressFill");
+    const teacherScore = document.getElementById("teacherScore");
+    const scoreValue = document.getElementById("scoreValue");
+    const submitButton = document.getElementById("submitButton");
+    const statusText = document.getElementById("statusText");
+    const restartButton = document.getElementById("restartButton");
+    const qrWrap = document.getElementById("qrWrap");
+    const shareLink = document.getElementById("shareLink");
+    const copyLinkButton = document.getElementById("copyLinkButton");
+    const shareNote = document.getElementById("shareNote");
+
+    let scoreTouched = false;
+    const totalSteps = 4;
+
+    function updateRangeBackground() {
+      const min = Number(teacherScore.min);
+      const max = Number(teacherScore.max);
+      const value = Number(teacherScore.value);
+      const percent = ((value - min) / (max - min)) * 100;
+      teacherScore.style.background = "linear-gradient(90deg, var(--primary) " + percent + "%, #dceff0 " + percent + "%)";
+      scoreValue.textContent = value + " 分";
+    }
+
+    function getProgressCount() {
+      let count = 0;
+
+      if (form.querySelector('input[name="satisfaction"]:checked')) {
+        count += 1;
+      }
+
+      if (scoreTouched) {
+        count += 1;
+      }
+
+      if (form.querySelectorAll('input[name="advantages"]:checked').length > 0) {
+        count += 1;
+      }
+
+      if (form.querySelector('input[name="frequency"]:checked')) {
+        count += 1;
+      }
+
+      return count;
+    }
+
+    function updateProgress() {
+      const completed = getProgressCount();
+      const percent = Math.round((completed / totalSteps) * 100);
+      progressText.textContent = percent + "%";
+      progressFill.style.width = percent + "%";
+      submitButton.disabled = completed < totalSteps;
+    }
+
+    function setStatus(message, type) {
+      statusText.textContent = message || "";
+      statusText.className = "status-text" + (type ? " " + type : "");
+    }
+
+    function buildPayload() {
+      return {
+        name: document.getElementById("name").value.trim(),
+        contact: document.getElementById("contact").value.trim(),
+        satisfaction: form.querySelector('input[name="satisfaction"]:checked')?.value || "",
+        teacherScore: Number(teacherScore.value),
+        advantages: Array.from(form.querySelectorAll('input[name="advantages"]:checked')).map((input) => input.value),
+        frequency: form.querySelector('input[name="frequency"]:checked')?.value || "",
+        suggestion: document.getElementById("suggestion").value.trim()
+      };
+    }
+
+    async function submitSurvey(payload) {
+      const response = await fetch("/api/surveys", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "提交失败，请稍后重试。");
+      }
+
+      return result;
+    }
+
+    async function loadShareInfo() {
+      try {
+        const response = await fetch("/api/share");
+
+        if (!response.ok) {
+          throw new Error("无法获取分享链接");
+        }
+
+        const result = await response.json();
+        shareLink.href = result.shareUrl;
+        shareLink.textContent = result.shareUrl;
+        qrWrap.innerHTML = '<img src="' + result.qrCodeDataUrl + '" alt="问卷二维码">';
+        shareNote.textContent = "手机和电脑处于同一网络时，可直接扫码填写问卷。";
+      } catch (error) {
+        shareNote.textContent = "当前未连接到后台服务，请先运行 `npm start` 后再刷新页面。";
+      }
+    }
+
+    teacherScore.addEventListener("input", () => {
+      scoreTouched = true;
+      updateRangeBackground();
+      updateProgress();
+    });
+
+    form.addEventListener("change", updateProgress);
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!scoreTouched) {
+        teacherScore.focus();
+        return;
+      }
+
+      if (form.querySelectorAll('input[name="advantages"]:checked').length === 0) {
+        form.querySelector('input[name="advantages"]').focus();
+        return;
+      }
+
+      const payload = buildPayload();
+      submitButton.disabled = true;
+      setStatus("正在提交问卷，请稍候…");
+
+      try {
+        await submitSurvey(payload);
+        form.reset();
+        teacherScore.value = "5";
+        scoreTouched = false;
+        updateRangeBackground();
+        updateProgress();
+        setStatus("");
+        formSection.classList.add("hidden");
+        thanksSection.classList.add("is-visible");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        setStatus(error.message || "提交失败，请稍后重试。", "error");
+        updateProgress();
+      }
+    });
+
+    restartButton.addEventListener("click", () => {
+      thanksSection.classList.remove("is-visible");
+      formSection.classList.remove("hidden");
+      setStatus("", "");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    copyLinkButton.addEventListener("click", async () => {
+      if (!shareLink.href || shareLink.href === "#") {
+        shareNote.textContent = "分享链接尚未准备好，请先运行后台服务。";
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareLink.href);
+        shareNote.textContent = "分享链接已复制。";
+      } catch (error) {
+        shareNote.textContent = "复制失败，请手动长按或选中链接复制。";
+      }
+    });
+
+    updateRangeBackground();
+    updateProgress();
+    loadShareInfo();
+  </script>
+</body>
+</html>
