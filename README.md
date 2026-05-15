@@ -34,7 +34,7 @@ npm start
 
 ## 公网部署建议
 
-推荐先部署到 Render 免费方案。注意免费方案没有持久化磁盘，服务器重启后问卷数据可能会丢失。
+推荐把项目部署在 Render，并把问卷数据存到云数据库。当前项目已支持 PostgreSQL 持久化存储，优先建议配一个数据库连接串。
 
 ### Render 部署步骤
 
@@ -43,12 +43,16 @@ npm start
 3. 选择本仓库，Render 会读取 `render.yaml`
 4. 在环境变量里填写：
 
+- `DATABASE_URL`
+  填 PostgreSQL 数据库连接串。推荐使用 Supabase / Neon / Render Postgres
 - `PUBLIC_BASE_URL`
   例：`https://你的项目.onrender.com`
 - `ADMIN_USERNAME`
   例：`admin`
 - `ADMIN_PASSWORD`
   例：请设置一个强密码
+
+如果暂时不填 `DATABASE_URL`，项目也能运行，但会退回本地 JSON 存储，免费实例重启后数据仍可能丢失。
 
 5. 部署完成后：
 
@@ -60,3 +64,9 @@ npm start
 - 可直接把问卷公网链接发到微信
 - 也可打开问卷首页，用页面里的二维码给他人扫码填写
 - 微信端填写会直接提交到云端后台
+
+## 持久化存储建议
+
+- 如果你没有境外银行卡，优先考虑免费 PostgreSQL 平台，例如 Supabase 或 Neon
+- 拿到数据库连接串后，填到 Render 的 `DATABASE_URL`
+- 应用会自动建表，不需要手动执行 SQL

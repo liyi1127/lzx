@@ -4,15 +4,24 @@ const QRCode = require("qrcode");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const { Pool } = require("pg");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
+const databaseUrl = String(process.env.DATABASE_URL || "").trim();
 const dataRoot = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : path.join(__dirname, "data");
 const dataDir = dataRoot;
 const exportDir = path.join(dataRoot, "exports");
 const dataFile = path.join(dataDir, "surveys.json");
+
+const db = databaseUrl
+  ? new Pool({
+      connectionString: databaseUrl,
+      ssl: { rejectUnauthorized: false }
+    })
+  : null;
 
 app.use(express.json({ limit: "1mb" }));
 
@@ -23,23 +32,6 @@ function ensureDirectories() {
   if (!fs.existsSync(dataFile)) {
     fs.writeFileSync(dataFile, "[]", "utf8");
   }
-}
-
-function readSurveys() {
-  ensureDirectories();
-
-  try {
-    const raw = fs.readFileSync(dataFile, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveSurveys(records) {
-  ensureDirectories();
-  fs.writeFileSync(dataFile, JSON.stringify(records, null, 2), "utf8");
 }
 
 function getLocalIpAddress() {
@@ -206,6 +198,127 @@ function requireAdminAuth(req, res, next) {
   next();
 }
 
+function normalizeRecord(record) {
+  return {
+    id: String(record.id),
+    name: String(record.name || "").trim(),
+    contact: String(record.contact || "").trim(),
+    satisfaction: String(record.satisfaction || "").trim(),
+    teacherScore: Number(record.teacherScore),
+    advantages: Array.isArray(record.advantages)
+      ? record.advantages.map((item) => String(item).trim()).filter(Boolean)
+      : [],
+    frequency: String(record.frequency || "").trim(),
+    suggestion: String(record.suggestion || "").trim(),
+    submittedAt: record.submittedAt || new Date().toISOString()
+  };
+}
+
+function readSurveysFromFile() {
+  ensureDirectories();
+
+  try {
+    const raw = fs.readFileSync(dataFile, "utf8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(normalizeRecord) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveSurveysToFile(records) {
+  ensureDirectories();
+  fs.writeFileSync(dataFile, JSON.stringify(records, null, 2), "utf8");
+}
+
+async function initDatabase() {
+  if (!db) {
+    return;
+  }
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS surveys (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL DEFAULT '',
+      contact TEXT NOT NULL DEFAULT '',
+      satisfaction TEXT NOT NULL,
+      teacher_score INTEGER NOT NULL,
+      advantages JSONB NOT NULL DEFAULT '[]'::jsonb,
+      frequency TEXT NOT NULL,
+      suggestion TEXT NOT NULL DEFAULT '',
+      submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+}
+
+async function listSurveys() {
+  if (!db) {
+    return readSurveysFromFile();
+  }
+
+  const result = await db.query(`
+    SELECT
+      id,
+      name,
+      contact,
+      satisfaction,
+      teacher_score AS "teacherScore",
+      advantages,
+      frequency,
+      suggestion,
+      submitted_at AS "submittedAt"
+    FROM surveys
+    ORDER BY submitted_at DESC
+  `);
+
+  return result.rows.map((row) =>
+    normalizeRecord({
+      ...row,
+      advantages: Array.isArray(row.advantages) ? row.advantages : []
+    })
+  );
+}
+
+async function insertSurvey(record) {
+  const normalized = normalizeRecord(record);
+
+  if (!db) {
+    const surveys = readSurveysFromFile();
+    surveys.unshift(normalized);
+    saveSurveysToFile(surveys);
+    return normalized;
+  }
+
+  await db.query(
+    `
+      INSERT INTO surveys (
+        id,
+        name,
+        contact,
+        satisfaction,
+        teacher_score,
+        advantages,
+        frequency,
+        suggestion,
+        submitted_at
+      ) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9)
+    `,
+    [
+      normalized.id,
+      normalized.name,
+      normalized.contact,
+      normalized.satisfaction,
+      normalized.teacherScore,
+      JSON.stringify(normalized.advantages),
+      normalized.frequency,
+      normalized.suggestion,
+      normalized.submittedAt
+    ]
+  );
+
+  return normalized;
+}
+
 app.get("/admin", requireAdminAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "admin.html"));
 });
@@ -244,95 +357,118 @@ app.get("/api/share", async (req, res) => {
   }
 });
 
-app.post("/api/surveys", (req, res) => {
-  const errorMessage = validateSurvey(req.body);
+app.post("/api/surveys", async (req, res) => {
+  try {
+    const errorMessage = validateSurvey(req.body);
 
-  if (errorMessage) {
-    res.status(400).json({ message: errorMessage });
-    return;
+    if (errorMessage) {
+      res.status(400).json({ message: errorMessage });
+      return;
+    }
+
+    const record = await insertSurvey({
+      id: String(Date.now()),
+      name: req.body.name,
+      contact: req.body.contact,
+      satisfaction: req.body.satisfaction,
+      teacherScore: req.body.teacherScore,
+      advantages: req.body.advantages,
+      frequency: req.body.frequency,
+      suggestion: req.body.suggestion,
+      submittedAt: new Date().toISOString()
+    });
+
+    res.status(201).json({
+      message: "提交成功",
+      record
+    });
+  } catch (error) {
+    console.error("Failed to save survey", error);
+    res.status(500).json({ message: "保存问卷失败，请稍后重试。" });
   }
-
-  const surveys = readSurveys();
-  const record = {
-    id: String(Date.now()),
-    name: String(req.body.name || "").trim(),
-    contact: String(req.body.contact || "").trim(),
-    satisfaction: String(req.body.satisfaction || "").trim(),
-    teacherScore: Number(req.body.teacherScore),
-    advantages: Array.isArray(req.body.advantages) ? req.body.advantages.map((item) => String(item).trim()).filter(Boolean) : [],
-    frequency: String(req.body.frequency || "").trim(),
-    suggestion: String(req.body.suggestion || "").trim(),
-    submittedAt: new Date().toISOString()
-  };
-
-  surveys.unshift(record);
-  saveSurveys(surveys);
-
-  res.status(201).json({
-    message: "提交成功",
-    record
-  });
 });
 
-app.get("/api/dashboard", requireAdminAuth, (req, res) => {
-  const surveys = readSurveys();
-  res.json(createDashboard(surveys));
+app.get("/api/dashboard", requireAdminAuth, async (req, res) => {
+  try {
+    const surveys = await listSurveys();
+    res.json(createDashboard(surveys));
+  } catch (error) {
+    console.error("Failed to load dashboard", error);
+    res.status(500).json({ message: "加载后台数据失败。" });
+  }
 });
 
 app.get("/api/export/excel", requireAdminAuth, async (req, res) => {
-  const surveys = readSurveys();
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("教师满意度调查");
+  try {
+    const surveys = await listSurveys();
+    ensureDirectories();
 
-  worksheet.columns = [
-    { header: "提交时间", key: "submittedAt", width: 24 },
-    { header: "姓名", key: "name", width: 16 },
-    { header: "联系方式", key: "contact", width: 22 },
-    { header: "整体满意度", key: "satisfaction", width: 16 },
-    { header: "做老师意愿评分", key: "teacherScore", width: 16 },
-    { header: "最看重优势", key: "advantages", width: 36 },
-    { header: "使用频率", key: "frequency", width: 14 },
-    { header: "建议或意见", key: "suggestion", width: 48 }
-  ];
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("教师满意度调查");
 
-  worksheet.getRow(1).font = { bold: true };
-  worksheet.getRow(1).fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "DFF6F7" }
-  };
+    worksheet.columns = [
+      { header: "提交时间", key: "submittedAt", width: 24 },
+      { header: "姓名", key: "name", width: 16 },
+      { header: "联系方式", key: "contact", width: 22 },
+      { header: "整体满意度", key: "satisfaction", width: 16 },
+      { header: "做老师意愿评分", key: "teacherScore", width: 16 },
+      { header: "最看重优势", key: "advantages", width: 36 },
+      { header: "使用频率", key: "frequency", width: 14 },
+      { header: "建议或意见", key: "suggestion", width: 48 }
+    ];
 
-  for (const survey of surveys) {
-    worksheet.addRow({
-      submittedAt: survey.submittedAt ? new Date(survey.submittedAt).toLocaleString("zh-CN") : "",
-      name: survey.name || "",
-      contact: survey.contact || "",
-      satisfaction: survey.satisfaction || "",
-      teacherScore: survey.teacherScore || "",
-      advantages: Array.isArray(survey.advantages) ? survey.advantages.join("、") : "",
-      frequency: survey.frequency || "",
-      suggestion: survey.suggestion || ""
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "DFF6F7" }
+    };
+
+    for (const survey of surveys) {
+      worksheet.addRow({
+        submittedAt: survey.submittedAt ? new Date(survey.submittedAt).toLocaleString("zh-CN") : "",
+        name: survey.name || "",
+        contact: survey.contact || "",
+        satisfaction: survey.satisfaction || "",
+        teacherScore: survey.teacherScore || "",
+        advantages: Array.isArray(survey.advantages) ? survey.advantages.join("、") : "",
+        frequency: survey.frequency || "",
+        suggestion: survey.suggestion || ""
+      });
+    }
+
+    worksheet.eachRow((row) => {
+      row.alignment = { vertical: "top", wrapText: true };
     });
+
+    const fileName = `teacher-survey-${Date.now()}.xlsx`;
+    const filePath = path.join(exportDir, fileName);
+    await workbook.xlsx.writeFile(filePath);
+
+    res.download(filePath, fileName);
+  } catch (error) {
+    console.error("Failed to export excel", error);
+    res.status(500).json({ message: "导出 Excel 失败。" });
   }
-
-  worksheet.eachRow((row) => {
-    row.alignment = { vertical: "top", wrapText: true };
-  });
-
-  const fileName = `teacher-survey-${Date.now()}.xlsx`;
-  const filePath = path.join(exportDir, fileName);
-  await workbook.xlsx.writeFile(filePath);
-
-  res.download(filePath, fileName);
 });
 
-ensureDirectories();
+async function start() {
+  ensureDirectories();
+  await initDatabase();
 
-app.listen(port, () => {
-  const localIp = getLocalIpAddress();
-  console.log(`Survey app is running at http://localhost:${port}`);
-  console.log(`LAN share URL: http://${localIp}:${port}`);
-  if (process.env.PUBLIC_BASE_URL) {
-    console.log(`Public share URL: ${process.env.PUBLIC_BASE_URL}`);
-  }
+  app.listen(port, () => {
+    const localIp = getLocalIpAddress();
+    console.log(`Survey app is running at http://localhost:${port}`);
+    console.log(`LAN share URL: http://${localIp}:${port}`);
+    console.log(db ? "Storage mode: PostgreSQL" : "Storage mode: local JSON");
+
+    if (process.env.PUBLIC_BASE_URL) {
+      console.log(`Public share URL: ${process.env.PUBLIC_BASE_URL}`);
+    }
+  });
+}
+
+start().catch((error) => {
+  console.error("Failed to start application", error);
+  process.exit(1);
 });
