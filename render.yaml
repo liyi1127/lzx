@@ -2,19 +2,13 @@ services:
   - type: web
     name: teacher-survey
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /
-    disk:
-      name: survey-data
-      mountPath: /opt/render/project/data
-      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: 24.14.0
-      - key: DATA_DIR
-        value: /opt/render/project/data
       - key: PUBLIC_BASE_URL
         sync: false
       - key: ADMIN_USERNAME
